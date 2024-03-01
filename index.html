@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Rifa Entre Amigos</title>
+    <style>
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); /* Ajuste o número de colunas aqui */
+            gap: 10px;
+        }
+        .number-box {
+            padding: 20px;
+            background-color: #f0f0f0;
+            text-align: center;
+            cursor: pointer;
+        }
+        .sold {
+            background-color: #add8e6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rifa Entre Amigos</h1>
+    <div id="number-grid" class="number-grid">
+        <!-- Números serão adicionados aqui -->
+    </div>
+
+    <button onclick="submitToGoogleSheet()">Enviar Dados da Rifa</button>
+
+    <script>
+        const totalNumbers = 50; // Ajuste o número total de rifas aqui
+        const grid = document.getElementById('number-grid');
+
+        const updateSoldStatus = (number, buyer, contact) => {
+            // Aqui você iria atualizar a interface, por exemplo:
+            document.getElementById(`box-${number}`).classList.add('sold');
+            // E aqui vamos chamar a função para enviar os dados ao Google Sheets:
+            submitToGoogleSheet(number, buyer, contact);
+        };
+
+        const promptForBuyerInfo = (number) => {
+            const buyer = prompt(`Quem está comprando o número ${number}?`);
+            const contact = prompt(`Insira o contato de ${buyer}:`);
+            if (buyer && contact) {
+                updateSoldStatus(number, buyer, contact);
+            }
+        };
+
+        for(let i = 1; i <= totalNumbers; i++) {
+            const numberBox = document.createElement('div');
+            numberBox.classList.add('number-box');
+            numberBox.id = `box-${i}`;
+            numberBox.textContent = i;
+            numberBox.onclick = () => promptForBuyerInfo(i);
+            grid.appendChild(numberBox);
+        }
+
+        function submitToGoogleSheet(number, buyer, contact) {
+            var data = {number: number, buyer: buyer, contact: contact};
+
+            fetch('https://script.google.com/macros/s/AKfycbwZ57K39JeiW6puw9VhwRMni_8YabJhIS7T3_hUUtzdalu3-CkcR_7UMnQ417nJmeSndQ/exec', {
+                method: 'POST',
+                mode: 'no-cors', // Importante para evitar problemas de CORS
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                console.log('Dados enviados com sucesso');
+            }).catch(error => {
+                console.error('Erro ao enviar dados', error);
+            });
+        }
+    </script>
+</body>
+</html>
